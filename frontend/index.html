@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Enxoval Maria Cecília</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div id="login-screen" class="card login">
+      <h1 class="title">🦋 Enxoval Maria Cecília</h1>
+
+      <div class="form">
+        <input id="user" placeholder="Usuário" />
+
+        <input id="password" type="password" placeholder="Senha" />
+
+        <button id="loginBtn" class="primary">Entrar</button>
+      </div>
+    </div>
+
+    <div id="app-screen" class="hidden">
+      <header class="header">
+        <h1>🦋 Enxoval da Maria Cecília</h1>
+
+        <button id="addBtn" class="primary">＋ Adicionar Item</button>
+      </header>
+
+      <div class="progress">
+        <div id="progress-bar"></div>
+      </div>
+
+      <p id="progress-text"></p>
+
+      <div id="items"></div>
+    </div>
+
+    <div id="modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Novo Item</h3>
+
+        <label>Categoria</label>
+
+        <select id="categoria">
+          <option value="Roupas">Roupas</option>
+          <option value="Higiene">Higiene</option>
+          <option value="Fraldas">Fraldas</option>
+          <option value="Alimentação">Alimentação</option>
+          <option value="Sono">Sono</option>
+          <option value="Passeio">Passeio</option>
+        </select>
+
+        <label>Item</label>
+        <input id="nome" placeholder="Nome do item" />
+
+        <label>Quantidade</label>
+        <input id="quantidade" type="number" />
+
+        <button id="saveBtn" class="primary">Salvar</button>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

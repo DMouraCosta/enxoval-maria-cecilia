@@ -1,0 +1,86 @@
+[
+  {
+    "id": "1",
+    "categoria": "Roupas",
+    "nome": "~15 peças de roupa",
+    "quantidade": 15,
+    "checked": true
+  },
+  {
+    "id": "2",
+    "categoria": "Higiene",
+    "nome": "Banheira",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "3",
+    "categoria": "Higiene",
+    "nome": "Kit higiene",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "4",
+    "categoria": "Higiene",
+    "nome": "Toalhas",
+    "quantidade": 2,
+    "checked": true
+  },
+  {
+    "id": "5",
+    "categoria": "Fraldas",
+    "nome": "Fralda",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "6",
+    "categoria": "Fraldas",
+    "nome": "Lenço",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "7",
+    "categoria": "Fraldas",
+    "nome": "Pomada",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "8",
+    "categoria": "Alimentação",
+    "nome": "Mamadeiras",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "9",
+    "categoria": "Alimentação",
+    "nome": "Panos de boca",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "10",
+    "categoria": "Sono",
+    "nome": "Mantas",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "11",
+    "categoria": "Sono",
+    "nome": "Cueiros",
+    "quantidade": 1,
+    "checked": true
+  },
+  {
+    "id": "12",
+    "categoria": "Saída",
+    "nome": "Bolsa maternidade",
+    "quantidade": 1,
+    "checked": true
+  }
+]
