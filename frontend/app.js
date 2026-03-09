@@ -1,6 +1,6 @@
 ﻿let token = localStorage.getItem("token") || "";
 
-const api = "http://localhost:3000";
+const api = "https://enxoval-maria-cecilia.onrender.com";
 
 let currentCategory = "";
 let editingItem = null;
