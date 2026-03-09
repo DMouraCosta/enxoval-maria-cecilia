@@ -3,63 +3,68 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <title>Enxoval Maria Cecília</title>
-
+    <title>Enxoval Maria Cec&iacute;lia</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-
   <body>
-    <div id="login-screen" class="card login">
-      <h1 class="title">🦋 Enxoval Maria Cecília</h1>
+    <div class="app">
+      <section id="login-screen" class="view is-active">
+        <div class="login-card">
+          <h1>Enxoval Maria Cec&iacute;lia</h1>
+          <input id="user" placeholder="Usu&aacute;rio" />
+          <input id="password" type="password" placeholder="Senha" />
+          <button id="loginBtn">Entrar</button>
+        </div>
+      </section>
 
-      <div class="form">
-        <input id="user" placeholder="Usuário" />
+      <section id="categories" class="view hidden">
+        <h2 class="page-title">Categorias</h2>
+        <div id="categories-grid" class="categories-grid"></div>
+      </section>
 
-        <input id="password" type="password" placeholder="Senha" />
+      <section id="items-screen" class="view hidden">
+        <div class="items-header">
+          <button id="backBtn" type="button" onclick="back()">
+            &larr; Voltar
+          </button>
+          <h2 id="categoria-titulo"></h2>
+          <button id="createBtn" type="button" onclick="openCreateModal()">
+            +
+          </button>
+        </div>
 
-        <button id="loginBtn" class="primary">Entrar</button>
-      </div>
-    </div>
+        <div id="summary"></div>
+        <div class="progress">
+          <div id="progress-bar"></div>
+        </div>
+        <div id="items"></div>
+      </section>
 
-    <div id="app-screen" class="hidden">
-      <header class="header">
-        <h1>🦋 Enxoval da Maria Cecília</h1>
+      <div id="modal" class="modal hidden">
+        <div class="modal-content">
+          <h3 id="modal-title"></h3>
+          <input id="item-name" placeholder="Nome" />
+          <input
+            id="item-qty"
+            type="number"
+            min="0"
+            placeholder="Quantidade total"
+          />
+          <input
+            id="item-done"
+            type="number"
+            min="0"
+            placeholder="Quantidade conclu&iacute;da"
+          />
 
-        <button id="addBtn" class="primary">＋ Adicionar Item</button>
-      </header>
-
-      <div class="progress">
-        <div id="progress-bar"></div>
-      </div>
-
-      <p id="progress-text"></p>
-
-      <div id="items"></div>
-    </div>
-
-    <div id="modal" class="modal hidden">
-      <div class="modal-content">
-        <h3>Novo Item</h3>
-
-        <label>Categoria</label>
-
-        <select id="categoria">
-          <option value="Roupas">Roupas</option>
-          <option value="Higiene">Higiene</option>
-          <option value="Fraldas">Fraldas</option>
-          <option value="Alimentação">Alimentação</option>
-          <option value="Sono">Sono</option>
-          <option value="Passeio">Passeio</option>
-        </select>
-
-        <label>Item</label>
-        <input id="nome" placeholder="Nome do item" />
-
-        <label>Quantidade</label>
-        <input id="quantidade" type="number" />
-
-        <button id="saveBtn" class="primary">Salvar</button>
+          <div class="modal-actions">
+            <button type="button" onclick="saveItem()">Salvar</button>
+            <button type="button" onclick="closeModal()">Cancelar</button>
+            <button id="deleteBtn" type="button" onclick="deleteItem()">
+              Excluir
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 

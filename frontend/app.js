@@ -1,255 +1,397 @@
-let token = localStorage.getItem("token") || "";
+﻿let token = localStorage.getItem("token") || "";
 
-const api = "https://enxoval-maria-cecilia.onrender.com";
+const api = "http://localhost:3000";
 
-const loginBtn = document.getElementById("loginBtn");
-const addBtn = document.getElementById("addBtn");
-const saveBtn = document.getElementById("saveBtn");
+let currentCategory = "";
+let editingItem = null;
+let currentItems = [];
 
-loginBtn.onclick = login;
-addBtn.onclick = openModal;
-saveBtn.onclick = saveItem;
+const categories = {
+  Roupas: "https://i.ibb.co/gFrnWVMJ/roupas-removebg-preview.png",
+  Higiene: "https://i.ibb.co/8LgXwzMC/higiene-removebg-preview.png",
+  Fraldas: "https://i.ibb.co/1frVpgsq/fraldas-removebg-preview.png",
+  "Alimenta\u00e7\u00e3o":
+    "https://i.ibb.co/SXg2n8BD/alimenta-o-removebg-preview.png",
+  Sono: "https://i.ibb.co/FdhdFBC/sono-removebg-preview.png",
+  "Sa\u00edda": "https://i.ibb.co/fdrDrxTk/saida-removebg-preview.png",
+  "Mam\u00e3e": "https://i.ibb.co/PzfP35nK/mamae.png",
+};
 
-/* ------------------------------
-RESTORE SESSION
---------------------------------*/
+const categoryAliases = {
+  "Alimenta\u00e7\u00e3o": "Alimenta\u00e7\u00e3o",
+  "Alimenta\u00c3\u00a7\u00c3\u00a3o": "Alimenta\u00e7\u00e3o",
+  "Sa\u00edda": "Sa\u00edda",
+  "Sa\u00c3\u00adda": "Sa\u00edda",
+  "Mam\u00e3e": "Mam\u00e3e",
+  "Mam\u00c3\u00a3e": "Mam\u00e3e",
+};
+
+const VIEW_TRANSITION_MS = 220;
+
+document.getElementById("loginBtn").addEventListener("click", login);
 
 if (token) {
-  showApp();
-  loadItems();
+  showCategories();
 }
 
-/* ------------------------------
-LOGIN
---------------------------------*/
+function normalizeCategoryName(value) {
+  const text = String(value || "").trim();
+  return categoryAliases[text] || text;
+}
+
+function categoryKey(value) {
+  return normalizeCategoryName(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function normalizeItem(rawItem = {}) {
+  const nome = rawItem.nome == null ? "" : String(rawItem.nome);
+  const quantidade = Math.max(0, Number(rawItem.quantidade) || 0);
+
+  let concluido = Number(rawItem.concluido);
+  if (!Number.isFinite(concluido)) {
+    concluido = 0;
+  }
+
+  concluido = Math.max(0, Math.min(concluido, quantidade));
+
+  return {
+    id: rawItem.id,
+    categoria: normalizeCategoryName(rawItem.categoria),
+    nome,
+    quantidade,
+    concluido,
+  };
+}
+
+function getActiveView() {
+  return document.querySelector(".view:not(.hidden)");
+}
+
+function switchView(nextViewId) {
+  const nextView = document.getElementById(nextViewId);
+  const currentView = getActiveView();
+
+  if (!nextView || currentView === nextView) {
+    if (nextView) {
+      nextView.classList.remove("hidden");
+    }
+
+    return;
+  }
+
+  nextView.classList.remove("hidden");
+  nextView.classList.add("transition-enter");
+
+  requestAnimationFrame(() => {
+    if (currentView) {
+      currentView.classList.add("transition-leave");
+      currentView.classList.remove("is-active");
+    }
+
+    nextView.classList.remove("transition-enter");
+    nextView.classList.add("is-active");
+  });
+
+  window.setTimeout(() => {
+    if (currentView) {
+      currentView.classList.remove("transition-leave");
+      currentView.classList.add("hidden");
+    }
+  }, VIEW_TRANSITION_MS);
+}
 
 async function login() {
-  const user = document.getElementById("user").value;
+  const user = document.getElementById("user").value.trim();
   const password = document.getElementById("password").value;
 
-  const res = await fetch(api + "/login", {
-    method: "POST",
+  try {
+    const res = await fetch(api + "/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user, password }),
+    });
 
-    headers: {
-      "Content-Type": "application/json",
-    },
+    if (!res.ok) {
+      throw new Error("Falha no login");
+    }
 
-    body: JSON.stringify({ user, password }),
+    const data = await res.json();
+
+    token = data.token || "";
+
+    if (!token) {
+      throw new Error("Token inv\u00e1lido");
+    }
+
+    localStorage.setItem("token", token);
+
+    showCategories();
+  } catch (error) {
+    alert("N\u00e3o foi poss\u00edvel entrar. Verifique usu\u00e1rio e senha.");
+    console.error(error);
+  }
+}
+
+function showCategories() {
+  switchView("categories");
+  renderCategories();
+}
+
+function renderCategories() {
+  const grid = document.getElementById("categories-grid");
+
+  grid.innerHTML = "";
+
+  Object.keys(categories).forEach((cat) => {
+    const div = document.createElement("div");
+
+    div.className = "category";
+    div.innerHTML = `
+      <img src="${categories[cat]}" alt="${cat}">
+      <span>${cat}</span>
+    `;
+
+    div.addEventListener("click", () => openCategory(cat));
+
+    grid.appendChild(div);
   });
+}
 
-  if (!res.ok) {
-    alert("Login inválido");
-    return;
+function back() {
+  switchView("categories");
+}
+
+async function openCategory(cat) {
+  currentCategory = cat;
+
+  document.getElementById("categoria-titulo").innerText = cat;
+  switchView("items-screen");
+
+  await loadItems(currentCategory);
+}
+
+function ensureItemsScreenVisible() {
+  const itemsScreen = document.getElementById("items-screen");
+  if (itemsScreen.classList.contains("hidden")) {
+    switchView("items-screen");
+  }
+}
+
+async function loadItems(category = currentCategory) {
+  if (category) {
+    currentCategory = category;
   }
 
-  const data = await res.json();
+  try {
+    const res = await fetch(api + "/items", {
+      headers: { Authorization: "Bearer " + token },
+    });
 
-  token = data.token;
+    if (!res.ok) {
+      throw new Error("Falha ao carregar itens");
+    }
 
-  localStorage.setItem("token", token);
+    const rawItems = await res.json();
 
-  showApp();
+    currentItems = rawItems.map(normalizeItem).filter((item) => {
+      return categoryKey(item.categoria) === categoryKey(currentCategory);
+    });
 
-  loadItems();
-}
-
-/* ------------------------------
-SHOW APP
---------------------------------*/
-
-function showApp() {
-  document.getElementById("login-screen").classList.add("hidden");
-  document.getElementById("app-screen").classList.remove("hidden");
-}
-
-/* ------------------------------
-API HELPER
---------------------------------*/
-
-async function apiRequest(url, options = {}) {
-  const res = await fetch(api + url, {
-    ...options,
-
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-      ...(options.headers || {}),
-    },
-  });
-
-  if (res.status === 401 || res.status === 403) {
-    console.warn("Sessão inválida ou expirada");
-
-    logout();
-
-    return null;
+    renderItems(currentItems);
+  } catch (error) {
+    alert("N\u00e3o foi poss\u00edvel carregar os itens.");
+    console.error(error);
   }
-
-  return res;
 }
 
-/* ------------------------------
-LOGOUT
---------------------------------*/
-
-function logout() {
-  localStorage.removeItem("token");
-
-  location.reload();
-}
-
-/* ------------------------------
-LOAD ITEMS
---------------------------------*/
-
-async function loadItems() {
-  const res = await apiRequest("/items");
-
-  if (!res) return;
-
-  const data = await res.json();
-
-  if (!Array.isArray(data)) {
-    console.error("Resposta inesperada da API:", data);
-    return;
-  }
-
-  render(data);
-}
-
-/* ------------------------------
-RENDER
---------------------------------*/
-
-function render(items) {
+function renderItems(items) {
   const container = document.getElementById("items");
 
   container.innerHTML = "";
 
+  let total = 0;
+  let done = 0;
+
   items.forEach((item) => {
+    const safeItem = normalizeItem(item);
+    const itemId = String(safeItem.id || "").replace(/'/g, "\\'");
+
+    const itemDone = Number(safeItem.concluido) || 0;
+    const itemTotal = Number(safeItem.quantidade) || 0;
+
+    total += itemTotal;
+    done += itemDone;
+
     const div = document.createElement("div");
 
     div.className = "item";
-
-    if (item.checked) {
-      div.classList.add("checked");
-    }
-
     div.innerHTML = `
-      <span>
-      ${iconCategoria(item.categoria)} 
-      <b>${item.categoria}</b> — ${item.nome} (${item.quantidade})
-      </span>
-
+      <span>${safeItem.nome || "Item"} (${itemDone}/${itemTotal})</span>
       <div class="actions">
-
-        <button onclick="toggle('${item.id}')">✔</button>
-
-        <button onclick="removeItem('${item.id}')">🗑</button>
-
+        <button type="button" onclick="checkItem('${itemId}')">OK</button>
+        <button type="button" onclick="editItem('${itemId}')">Editar</button>
       </div>
     `;
 
     container.appendChild(div);
   });
 
-  updateProgress(items);
+  document.getElementById("summary").innerText =
+    `Conclu\u00eddo ${done} de ${total}`;
+
+  const percent = total === 0 ? 0 : (done / total) * 100;
+
+  document.getElementById("progress-bar").style.width = `${percent}%`;
 }
 
-/* ------------------------------
-CATEGORY ICONS
---------------------------------*/
+function openCreateModal() {
+  editingItem = null;
 
-function iconCategoria(cat) {
-  const icons = {
-    Roupas: "👕",
-    Higiene: "🛁",
-    Fraldas: "🧷",
-    Alimentação: "🍼",
-    Sono: "🌙",
-    Passeio: "🚼",
-  };
+  document.getElementById("modal-title").innerText = "Novo item";
+  document.getElementById("item-name").value = "";
+  document.getElementById("item-qty").value = "";
+  document.getElementById("item-done").value = "0";
 
-  return icons[cat] || "📦";
-}
-
-/* ------------------------------
-PROGRESS BAR
---------------------------------*/
-
-function updateProgress(items) {
-  const total = items.length;
-
-  if (total === 0) {
-    document.getElementById("progress-bar").style.width = "0%";
-    document.getElementById("progress-text").innerText = "0 itens";
-    return;
-  }
-
-  const done = items.filter((i) => i.checked).length;
-
-  const percent = (done / total) * 100;
-
-  document.getElementById("progress-bar").style.width = percent + "%";
-
-  document.getElementById("progress-text").innerText =
-    done + " de " + total + " itens concluídos";
-}
-
-/* ------------------------------
-TOGGLE ITEM
---------------------------------*/
-
-async function toggle(id) {
-  await apiRequest("/items/" + id, {
-    method: "PUT",
-
-    body: JSON.stringify({ checked: true }),
-  });
-
-  loadItems();
-}
-
-/* ------------------------------
-DELETE ITEM
---------------------------------*/
-
-async function removeItem(id) {
-  await apiRequest("/items/" + id, {
-    method: "DELETE",
-  });
-
-  loadItems();
-}
-
-/* ------------------------------
-OPEN MODAL
---------------------------------*/
-
-function openModal() {
+  document.getElementById("deleteBtn").classList.add("hidden");
   document.getElementById("modal").classList.remove("hidden");
 }
 
-/* ------------------------------
-SAVE ITEM
---------------------------------*/
+function editItem(id) {
+  const item = currentItems.find((entry) => String(entry.id) === String(id));
+
+  if (!item) {
+    return;
+  }
+
+  const safeItem = normalizeItem(item);
+
+  editingItem = safeItem.id;
+
+  document.getElementById("modal-title").innerText = "Editar item";
+  document.getElementById("item-name").value = safeItem.nome;
+  document.getElementById("item-qty").value = String(safeItem.quantidade);
+  document.getElementById("item-done").value = String(safeItem.concluido);
+
+  document.getElementById("deleteBtn").classList.remove("hidden");
+  document.getElementById("modal").classList.remove("hidden");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.add("hidden");
+  editingItem = null;
+}
+
+function normalizeDoneValue(doneValue, qtyValue) {
+  const quantidade = Math.max(0, Number(qtyValue) || 0);
+  let concluido = Math.max(0, Number(doneValue) || 0);
+
+  if (concluido > quantidade) {
+    concluido = quantidade;
+  }
+
+  return { quantidade, concluido };
+}
 
 async function saveItem() {
-  const categoria = document.getElementById("categoria").value;
-  const nome = document.getElementById("nome").value;
-  const quantidade = document.getElementById("quantidade").value;
+  const nome = document.getElementById("item-name").value.trim();
+  const qtyInput = document.getElementById("item-qty").value;
+  const doneInput = document.getElementById("item-done").value;
 
-  await apiRequest("/items", {
-    method: "POST",
+  const { quantidade, concluido } = normalizeDoneValue(doneInput, qtyInput);
 
-    body: JSON.stringify({
-      categoria,
-      nome,
-      quantidade,
-    }),
-  });
+  const body = {
+    categoria: currentCategory,
+    nome,
+    quantidade,
+    concluido,
+  };
 
-  document.getElementById("modal").classList.add("hidden");
+  try {
+    if (editingItem) {
+      await fetch(api + "/items/" + editingItem, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify(body),
+      });
+    } else {
+      await fetch(api + "/items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify(body),
+      });
+    }
 
-  loadItems();
+    closeModal();
+    await loadItems(currentCategory);
+    ensureItemsScreenVisible();
+  } catch (error) {
+    alert("N\u00e3o foi poss\u00edvel salvar o item.");
+    console.error(error);
+  }
+}
+
+async function deleteItem() {
+  if (!editingItem) {
+    return;
+  }
+
+  try {
+    await fetch(api + "/items/" + editingItem, {
+      method: "DELETE",
+      headers: { Authorization: "Bearer " + token },
+    });
+
+    closeModal();
+    await loadItems(currentCategory);
+    ensureItemsScreenVisible();
+  } catch (error) {
+    alert("N\u00e3o foi poss\u00edvel excluir o item.");
+    console.error(error);
+  }
+}
+
+async function checkItem(id) {
+  const item = currentItems.find((entry) => String(entry.id) === String(id));
+
+  if (!item) {
+    return;
+  }
+
+  const safeItem = normalizeItem(item);
+  const value = window.prompt(
+    "Quantidade conclu\u00edda",
+    String(safeItem.concluido),
+  );
+
+  if (value === null) {
+    return;
+  }
+
+  const { concluido } = normalizeDoneValue(value, safeItem.quantidade);
+
+  try {
+    await fetch(api + "/items/" + id, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({ concluido }),
+    });
+
+    await loadItems(currentCategory);
+    ensureItemsScreenVisible();
+  } catch (error) {
+    alert("N\u00e3o foi poss\u00edvel atualizar o item.");
+    console.error(error);
+  }
 }

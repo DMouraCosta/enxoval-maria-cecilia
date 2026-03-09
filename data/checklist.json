@@ -2,85 +2,100 @@
   {
     "id": "1",
     "categoria": "Roupas",
-    "nome": "~15 peças de roupa",
+    "nome": "Bodies",
     "quantidade": 15,
-    "checked": true
-  },
-  {
-    "id": "2",
-    "categoria": "Higiene",
-    "nome": "Banheira",
-    "quantidade": 1,
-    "checked": true
+    "concluido": 15
   },
   {
     "id": "3",
     "categoria": "Higiene",
     "nome": "Kit higiene",
     "quantidade": 1,
-    "checked": true
+    "concluido": 1
   },
   {
     "id": "4",
     "categoria": "Higiene",
     "nome": "Toalhas",
     "quantidade": 2,
-    "checked": true
+    "concluido": 0
   },
   {
     "id": "5",
     "categoria": "Fraldas",
-    "nome": "Fralda",
+    "nome": "Fraldas",
     "quantidade": 1,
-    "checked": true
+    "concluido": 1
   },
   {
     "id": "6",
     "categoria": "Fraldas",
     "nome": "Lenço",
     "quantidade": 1,
-    "checked": true
+    "concluido": 0
   },
   {
     "id": "7",
     "categoria": "Fraldas",
     "nome": "Pomada",
     "quantidade": 1,
-    "checked": true
+    "concluido": 0
   },
   {
     "id": "8",
     "categoria": "Alimentação",
     "nome": "Mamadeiras",
     "quantidade": 1,
-    "checked": true
+    "concluido": 0
   },
   {
     "id": "9",
     "categoria": "Alimentação",
     "nome": "Panos de boca",
     "quantidade": 1,
-    "checked": true
+    "concluido": 0
   },
   {
     "id": "10",
     "categoria": "Sono",
     "nome": "Mantas",
     "quantidade": 1,
-    "checked": true
+    "concluido": 0
   },
   {
     "id": "11",
     "categoria": "Sono",
     "nome": "Cueiros",
     "quantidade": 1,
-    "checked": true
+    "concluido": 0
   },
   {
     "id": "12",
     "categoria": "Saída",
-    "nome": "Bolsa maternidade",
+    "nome": null,
+    "quantidade": "",
+    "concluido": 0
+  },
+  {
+    "id": "13",
+    "categoria": "Mamãe",
+    "nome": "Absorvente pós parto",
     "quantidade": 1,
-    "checked": true
+    "concluido": 0
+  },
+  {
+    "id": "6f654db2-1660-409a-a2e3-9d171a248a57",
+    "categoria": "Roupas",
+    "nome": "teste",
+    "quantidade": 5,
+    "checked": false,
+    "concluido": 2
+  },
+  {
+    "id": "fa488513-68bc-4a1c-a335-d3a8f43775fd",
+    "categoria": "Saída",
+    "nome": "Teste",
+    "quantidade": 5,
+    "checked": false
   }
 ]
